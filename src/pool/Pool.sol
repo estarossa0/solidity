@@ -227,12 +227,21 @@ contract Pool is IPool, ReentrancyGuard {
     /**
      * @inheritdoc IPool
      */
-    function removeLiquidity(uint256 _shares)
+    function removeLiquidity(uint256 _shares, uint256 _minAmount0, uint256 _minAmount1, uint256 _deadline)
         external
         override
         nonReentrant
         returns (uint256 amount0, uint256 amount1)
     {
+        /* Validate the deadline has not passed */
+        if (block.timestamp > _deadline) revert Expired();
+
+        /* Validate the pool has been initialized */
+        if (totalSupply == 0) revert InsufficientLiquidity();
+
+        /* Validate the caller holds the shares being burned */
+        if (_shares > balanceOf[msg.sender]) revert InsufficientBalance();
+
         /* Read current token balances */
         uint256 bal0 = token0.balanceOf(address(this));
         uint256 bal1 = token1.balanceOf(address(this));
@@ -243,6 +252,12 @@ contract Pool is IPool, ReentrancyGuard {
 
         /* Validate both amounts are non-zero */
         require(amount0 > 0 && amount1 > 0, "amount0 or amount1 = 0");
+
+        /* Validate token 0 amount meets the caller's minimum */
+        if (amount0 < _minAmount0) revert InsufficientAmount0();
+
+        /* Validate token 1 amount meets the caller's minimum */
+        if (amount1 < _minAmount1) revert InsufficientAmount1();
 
         /* Burn the sender's shares */
         _burn(msg.sender, _shares);

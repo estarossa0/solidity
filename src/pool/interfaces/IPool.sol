@@ -40,6 +40,21 @@ interface IPool {
      */
     error InsufficientOutputAmount();
 
+    /**
+     * @notice Caller holds fewer shares than requested
+     */
+    error InsufficientBalance();
+
+    /**
+     * @notice Token 0 amount below the caller's minimum
+     */
+    error InsufficientAmount0();
+
+    /**
+     * @notice Token 1 amount below the caller's minimum
+     */
+    error InsufficientAmount1();
+
     /*------------------------------------------------------------------------*/
     /* Getters */
     /*------------------------------------------------------------------------*/
@@ -100,8 +115,13 @@ interface IPool {
     /**
      * @notice Remove liquidity
      * @param _shares Shares to burn
+     * @param _minAmount0 Minimum acceptable token 0 amount
+     * @param _minAmount1 Minimum acceptable token 1 amount
+     * @param _deadline Expiry timestamp
      * @return amount0 Token 0 amount
      * @return amount1 Token 1 amount
      */
-    function removeLiquidity(uint256 _shares) external returns (uint256 amount0, uint256 amount1);
+    function removeLiquidity(uint256 _shares, uint256 _minAmount0, uint256 _minAmount1, uint256 _deadline)
+        external
+        returns (uint256 amount0, uint256 amount1);
 }
